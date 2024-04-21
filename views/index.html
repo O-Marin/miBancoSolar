@@ -68,7 +68,7 @@
                 />
               </div>
 
-              <button type="submit" class="btn btn-danger">Relalizar</button>
+              <button type="submit" class="btn btn-danger">Realizar</button>
             </div>
           </div>
         </form>
@@ -291,10 +291,10 @@
     data.forEach((t) => {
       $(".transferencias").append(`
        <tr>
-         <td> ${formatDate(t[4])} </td>
+         <td> ${formatDate(t[3])} </td>
+         <td> ${t[0]} </td>
          <td> ${t[1]} </td>
          <td> ${t[2]} </td>
-         <td> ${t[3]} </td>
        </tr>
      `);
     });

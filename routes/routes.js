@@ -6,8 +6,12 @@ import {
   getUserControl,
   addUserControl,
   updateUserControl,
-  deleteUserControl
+  deleteUserControl,
 } from "../controller/userController.js";
+import {
+  addTransferControl,
+  getTransferControl,
+} from "../controller/transferController.js";
 
 const router = express.Router();
 const __dirname = import.meta.dirname;
@@ -24,8 +28,8 @@ router.put("/usuario", updateUserControl);
 
 router.delete("/usuario", deleteUserControl);
 
-router.post("/transferencia", (req, res) => {});
+router.post("/transferencia", addTransferControl);
 
-router.get("/transferencias", (req, res) => {});
+router.get("/transferencias", getTransferControl);
 
 export default router;

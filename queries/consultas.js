@@ -67,36 +67,70 @@ const deleteUserQuery = async (id) => {
    }
 }
 
-const insertarTransferenciaQuery = async (datos) => {
-  const actualizarCuentaEmisor = {
-    text: "update cuentas set saldo = saldo - $1 where id = $2 returning *",
+const addTransferQuery = async (datos) => {
+  console.log(datos)
+  const [emisor, receptor, monto] = datos;
+  //id:emisorID le pone a id el nombre emisorId
+  const { id: emisorId } = (
+    await pool.query(`SELECT * FROM usuarios WHERE nombre = '${emisor}'`)
+  ).rows[0];
+  //buscamos el id del receptor
+
+  const { id: receptorId } = (
+    await pool.query(`SELECT * FROM usuarios WHERE nombre = '${receptor}'`)
+  ).rows[0];
+  const addTransfer = {
+    text: "insert into transferencias (emisor,receptor,monto,fecha) values($1,$2,$3,now()) returning *",
+    values: [emisorId, receptorId, monto],
+  };
+
+  const actualizarEmisor = {
+    text: `update usuarios set balance = balance - $1 where nombre = $2 returning *`,
     values: [monto, emisor],
   };
-  const actualizarCuentaReceptor = {
-    text: "update cuentas set saldo = saldo + $1 where id = $2 returning *",
+  const actualizarReceptor = {
+    text: `update usuarios set balance = balance + $1 where nombre = $2 returning *`,
     values: [monto, receptor],
-  };
-  const sqlTransferencia = {
-    text: "insert into transferencias (emisor,receptor,monto) values ($1,$2,$3) returning * ",
-    values: datos,
   };
   try {
     await pool.query("begin");
-    await pool.query(actualizarCuentaEmisor);
-    await pool.query(actualizarCuentaReceptor);
-    const result = await pool.query(sqlTransferencia);
+    await pool.query(actualizarEmisor);
+    await pool.query(actualizarReceptor);
+    const result = await pool.query(addTransfer);
     await pool.query("commit");
+    console.log(result.rows[0]);
+    return true;
+  } catch (err) {
+    await pool.query("rollback");
+    return err;
+  }
+};
 
-    console.log("Transaccion Realizada con exito");
+const getTransferQuery = async () => {
+  try {
+    const getTransfer = {
+      text: `SELECT e.nombre 
+      AS emisor,
+      r.nombre AS receptor,
+      t.monto,
+      t.fecha
+    FROM transferencias t
+    JOIN usuarios e ON t.emisor = e.id
+    JOIN usuarios r ON t.receptor = r.id;`,
+      rowMode: "array",
+    };
+
+    const result = await pool.query(getTransfer);
     console.log(result.rows);
-    //return result.rows
+    return result.rows;
   } catch (err) {
     console.log(err);
   }
 };
 
 export {
-  insertarTransferenciaQuery,
+  addTransferQuery,
+  getTransferQuery,
   getUsuariosQuery,
   agregarUsuarioQuery,
   updateUserQuery,
